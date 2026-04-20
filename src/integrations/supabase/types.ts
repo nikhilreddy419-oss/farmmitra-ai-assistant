@@ -27,6 +27,7 @@ export type Database = {
           season: string
           session_id: string
           soil_type: string
+          user_id: string | null
           water_availability: string
         }
         Insert: {
@@ -41,6 +42,7 @@ export type Database = {
           season: string
           session_id: string
           soil_type: string
+          user_id?: string | null
           water_availability: string
         }
         Update: {
@@ -55,6 +57,7 @@ export type Database = {
           season?: string
           session_id?: string
           soil_type?: string
+          user_id?: string | null
           water_availability?: string
         }
         Relationships: []
