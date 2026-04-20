@@ -160,7 +160,7 @@ const FarmForm = () => {
         {result && (
           <div className="mt-8 rounded-xl border border-border bg-secondary/40 p-6 animate-fade-up">
             <h3 className="font-display text-lg font-semibold text-foreground mb-2">Recommendations</h3>
-            <p className="text-muted-foreground leading-relaxed">{result}</p>
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{result}</p>
           </div>
         )}
       </CardContent>
