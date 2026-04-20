@@ -213,9 +213,15 @@ const FarmForm = ({ onSaved }: Props) => {
                 <Sparkles className="h-5 w-5" />
                 <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.resultLabel}</span>
               </div>
-              <SpeakButton text={result} />
+              <div className="flex flex-wrap items-center gap-2">
+                <SpeakButton text={result} />
+                <PdfDownloadButton
+                  targetId="recommendation-printable"
+                  fileBaseName={`FarmMitra-${data.locality || "plan"}`.replace(/[^\w\-]+/g, "_")}
+                />
+              </div>
             </div>
-            <article className="prose prose-green max-w-none
+            <article id="recommendation-printable" className="prose prose-green max-w-none bg-card p-2
               prose-headings:font-display prose-headings:text-foreground
               prose-h1:text-3xl prose-h1:mb-4
               prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-3 prose-h2:flex prose-h2:items-center prose-h2:gap-2
