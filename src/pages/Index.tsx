@@ -1,12 +1,15 @@
+import { useState } from "react";
 import heroImg from "@/assets/hero-farm.jpg";
 import FarmForm from "@/components/FarmForm";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import RecommendationHistory from "@/components/RecommendationHistory";
 import { Button } from "@/components/ui/button";
 import { Leaf, Sprout, Sun, ShieldCheck, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
   const { tr } = useLanguage();
+  const [historyKey, setHistoryKey] = useState(0);
   const scrollToForm = () => document.getElementById("recommend")?.scrollIntoView({ behavior: "smooth" });
   const featureIcons = [Sprout, Sun, ShieldCheck];
 
@@ -138,8 +141,13 @@ const Index = () => {
       </section>
 
       {/* Form */}
-      <section id="how" className="container pb-24">
-        <FarmForm />
+      <section id="how" className="container pb-12">
+        <FarmForm onSaved={() => setHistoryKey((k) => k + 1)} />
+      </section>
+
+      {/* History */}
+      <section id="history" className="container pb-24">
+        <RecommendationHistory refreshKey={historyKey} />
       </section>
 
       {/* Footer */}
