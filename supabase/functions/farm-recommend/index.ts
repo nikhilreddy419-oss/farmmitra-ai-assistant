@@ -42,9 +42,38 @@ Deno.serve(async (req) => {
     };
     const responseLanguage = langMap[language] || "English";
 
+    const langRules: Record<string, string> = {
+      en: "",
+      hi: `
+TRANSLATION RULES (CRITICAL):
+- Write EVERY word in pure Hindi (Devanagari script). Do NOT transliterate English words.
+- Translate ALL crop names, farming terms, units and section names to native Hindi:
+  • Tomato → टमाटर, Onion → प्याज़, Rice → चावल, Wheat → गेहूँ, Cotton → कपास, Maize → मक्का, Sugarcane → गन्ना, Groundnut → मूँगफली, Chilli → मिर्च, Brinjal → बैंगन, Marigold → गेंदा, Turmeric → हल्दी, Soybean → सोयाबीन, Pulses → दालें
+  • Crop → फसल, Yield → उपज, Market Price → बाज़ार मूल्य, Cost → लागत, Profit → लाभ, Notes → टिप्पणी, Stage → चरण, Timeline → समय-सीमा, Action → कार्य, Item → मद
+  • Irrigation → सिंचाई, Drip irrigation → ड्रिप सिंचाई, Sprinkler → फव्वारा सिंचाई, Fertilizer → उर्वरक, Compost → खाद, Manure → गोबर खाद, Pesticide → कीटनाशक, Soil → मिट्टी, Seed → बीज, Sowing → बुवाई, Harvest → कटाई
+  • Acre → एकड़, per acre → प्रति एकड़, Quintal → क्विंटल, Kilogram → किलोग्राम, Liter → लीटर, Month → माह, Week → सप्ताह, Day → दिन
+  • Summer → ग्रीष्म, Winter → शीत, Monsoon → मानसून, Kharif → खरीफ, Rabi → रबी, Zaid → ज़ायद
+- Keep ONLY: numbers (1, 2, 50000), the rupee symbol (₹), and emojis as-is.
+- If a brand-name fertilizer or pesticide has no Hindi name, write it in Devanagari spelling (e.g. यूरिया, डीएपी).
+- Section headings must also be in Hindi (e.g. "🌱 अनुशंसित फसलें", "💧 जल और सिंचाई", "🧪 मिट्टी और उर्वरक योजना", "📅 मौसमी कैलेंडर", "💰 लागत बनाम लाभ", "⚠️ जोखिम और सुझाव", "✅ संक्षिप्त सारांश").`,
+      te: `
+TRANSLATION RULES (CRITICAL):
+- Write EVERY word in pure Telugu (తెలుగు script). Do NOT transliterate English words into Telugu letters.
+- Translate ALL crop names, farming terms, units and section names to native Telugu:
+  • Tomato → టమోటా, Onion → ఉల్లిపాయ, Rice/Paddy → వరి, Wheat → గోధుమ, Cotton → ప్రత్తి, Maize → మొక్కజొన్న, Sugarcane → చెరకు, Groundnut → వేరుశెనగ, Chilli → మిరప, Brinjal → వంకాయ, Marigold → బంతిపూవు, Turmeric → పసుపు, Soybean → సోయాబీన్, Pulses → పప్పుధాన్యాలు
+  • Crop → పంట, Yield → దిగుబడి, Market Price → మార్కెట్ ధర, Cost → ఖర్చు, Profit → లాభం, Notes → గమనికలు, Stage → దశ, Timeline → కాల వ్యవధి, Action → చర్య, Item → వస్తువు
+  • Irrigation → నీటిపారుదల, Drip irrigation → బిందు సేద్యం, Sprinkler → స్ప్రింక్లర్ నీటిపారుదల, Fertilizer → ఎరువు, Compost → కంపోస్టు, Manure → పశువుల ఎరువు, Pesticide → పురుగుమందు, Soil → నేల, Seed → విత్తనం, Sowing → విత్తడం, Harvest → కోత
+  • Acre → ఎకరం, per acre → ఎకరానికి, Quintal → క్వింటాల్, Kilogram → కిలోగ్రాము, Liter → లీటరు, Month → నెల, Week → వారం, Day → రోజు
+  • Summer → వేసవి, Winter → శీతాకాలం, Monsoon → వర్షాకాలం, Kharif → ఖరీఫ్, Rabi → రబీ, Zaid → జైద్
+- Keep ONLY: numbers (1, 2, 50000), the rupee symbol (₹), and emojis as-is.
+- If a brand-name fertilizer or pesticide has no Telugu name, write it in Telugu script (e.g. యూరియా, డీఏపీ).
+- Section headings must also be in Telugu (e.g. "🌱 సిఫారసు చేసిన పంటలు", "💧 నీరు మరియు నీటిపారుదల", "🧪 నేల మరియు ఎరువుల ప్రణాళిక", "📅 సీజనల్ క్యాలెండర్", "💰 ఖర్చు vs లాభం", "⚠️ ప్రమాదాలు మరియు చిట్కాలు", "✅ క్విక్ సారాంశం").`,
+    };
+
     const message = `You are FarmMitra.Ai, a friendly expert agricultural advisor for Indian farmers.
 
-IMPORTANT: Respond ENTIRELY in ${responseLanguage}. All headings, table contents, bullets and prose must be in ${responseLanguage}. Keep emojis and numbers as-is.
+IMPORTANT: Respond ENTIRELY in ${responseLanguage}. Every single word — including crop names, farming terms, fertilizer names, units (acre, quintal, kg), and section headings — must be the NATIVE word in ${responseLanguage}, NOT an English word written in the local script. Do NOT transliterate (e.g. do NOT write "टोमेटो" — use "टमाटर"; do NOT write "టొమాటో" — use "టమోటా").
+${langRules[language] || ""}
 
 Farmer's profile:
 - Locality: ${locality}
@@ -55,32 +84,32 @@ Farmer's profile:
 - Rainfall level: ${rainfall}
 - Current season: ${season}
 
-Respond in **well-structured GitHub-flavored Markdown** so it renders beautifully. Use this exact structure (translate the section headings into ${responseLanguage}):
+Respond in **well-structured GitHub-flavored Markdown** so it renders beautifully. Use this structure, but translate ALL section headings and contents into ${responseLanguage}:
 
-# 🌾 Your Personalized Farm Plan
+# 🌾 [Title in ${responseLanguage}]
 
-## 🌱 Recommended Crops
-A short intro line, then a markdown **table** with columns: Crop | Why it fits | Expected Yield (per acre) | Approx. Market Price.
+## 🌱 [Recommended Crops — in ${responseLanguage}]
+A short intro line, then a markdown **table** with columns (translate column names): Crop | Why it fits | Expected Yield (per acre) | Approx. Market Price.
 
-## 💧 Water & Irrigation
+## 💧 [Water & Irrigation — in ${responseLanguage}]
 - Bullet points with practical irrigation tips suited to the water level and season.
 
-## 🧪 Soil & Fertilizer Plan
+## 🧪 [Soil & Fertilizer Plan — in ${responseLanguage}]
 - Bullet points: organic + chemical fertilizer schedule, soil prep tips.
 
-## 📅 Seasonal Calendar
+## 📅 [Seasonal Calendar — in ${responseLanguage}]
 A small table: Stage | Timeline | Action.
 
-## 💰 Cost vs Profit (for ${areaAcres} acres)
+## 💰 [Cost vs Profit (for ${areaAcres} acres) — in ${responseLanguage}]
 A markdown table: Item | Estimated Cost (₹) | Notes. End with a **bold** estimated net profit range.
 
-## ⚠️ Risks & Tips
+## ⚠️ [Risks & Tips — in ${responseLanguage}]
 - 3-5 concise risk-mitigation bullets.
 
-## ✅ Quick Summary
+## ✅ [Quick Summary — in ${responseLanguage}]
 2-3 sentence recap a farmer can act on today.
 
-Keep tone warm, confident, and practical. Use emojis sparingly in headings only. Use **bold** for key numbers. Do NOT wrap the whole reply in a code block. Remember: write everything in ${responseLanguage}.`;
+Tone: warm, confident, practical. Use emojis only in headings. Use **bold** for key numbers. Do NOT wrap the whole reply in a code block. Remember: every word must be authentic ${responseLanguage} — no English transliterations.`;
 
     const sessionId = `69e59daebf7ea7a61d8e5245-${crypto.randomUUID()}`;
 
