@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2 } from "lucide-react";
+import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2, CalendarDays, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export type FarmInput = {
   locality: string;
@@ -15,6 +17,7 @@ export type FarmInput = {
   waterAvailability: string;
   budget: string;
   rainfall: string;
+  season: string;
 };
 
 const initial: FarmInput = {
@@ -24,6 +27,7 @@ const initial: FarmInput = {
   waterAvailability: "",
   budget: "",
   rainfall: "",
+  season: "",
 };
 
 const FarmForm = () => {
@@ -35,7 +39,7 @@ const FarmForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!data.locality || !data.areaAcres || !data.soilType || !data.waterAvailability || !data.budget || !data.rainfall) {
+    if (!data.locality || !data.areaAcres || !data.soilType || !data.waterAvailability || !data.budget || !data.rainfall || !data.season) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -132,15 +136,28 @@ const FarmForm = () => {
             />
           </Field>
 
-          <Field icon={<CloudRain className="h-4 w-4" />} label="Rainfall (mm/year)" htmlFor="rain">
-            <Input
-              id="rain"
-              type="number"
-              min="0"
-              placeholder="e.g. 800"
-              value={data.rainfall}
-              onChange={(e) => update("rainfall", e.target.value)}
-            />
+          <Field icon={<CloudRain className="h-4 w-4" />} label="Rainfall" htmlFor="rain">
+            <Select value={data.rainfall} onValueChange={(v) => update("rainfall", v)}>
+              <SelectTrigger id="rain"><SelectValue placeholder="Select rainfall level" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field icon={<CalendarDays className="h-4 w-4" />} label="Season" htmlFor="season">
+            <Select value={data.season} onValueChange={(v) => update("season", v)}>
+              <SelectTrigger id="season"><SelectValue placeholder="Select current season" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="summer">Summer</SelectItem>
+                <SelectItem value="monsoon">Monsoon (Kharif)</SelectItem>
+                <SelectItem value="post-monsoon">Post-Monsoon</SelectItem>
+                <SelectItem value="winter">Winter (Rabi)</SelectItem>
+                <SelectItem value="spring">Spring (Zaid)</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
 
           <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
@@ -158,9 +175,24 @@ const FarmForm = () => {
         </form>
 
         {result && (
-          <div className="mt-8 rounded-xl border border-border bg-secondary/40 p-6 animate-fade-up">
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">Recommendations</h3>
-            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{result}</p>
+          <div className="mt-8 rounded-2xl border border-border bg-gradient-card p-6 md:p-8 shadow-soft animate-fade-up">
+            <div className="flex items-center gap-2 mb-4 text-primary">
+              <Sparkles className="h-5 w-5" />
+              <span className="text-sm font-semibold uppercase tracking-wider">AI Recommendation</span>
+            </div>
+            <article className="prose prose-green max-w-none
+              prose-headings:font-display prose-headings:text-foreground
+              prose-h1:text-3xl prose-h1:mb-4
+              prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-3 prose-h2:flex prose-h2:items-center prose-h2:gap-2
+              prose-p:text-muted-foreground prose-p:leading-relaxed
+              prose-strong:text-foreground
+              prose-li:text-muted-foreground prose-li:marker:text-primary
+              prose-table:border prose-table:border-border prose-table:rounded-lg prose-table:overflow-hidden
+              prose-th:bg-secondary prose-th:text-foreground prose-th:p-3 prose-th:text-left
+              prose-td:p-3 prose-td:border-t prose-td:border-border prose-td:text-muted-foreground
+              prose-a:text-primary">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
+            </article>
           </div>
         )}
       </CardContent>

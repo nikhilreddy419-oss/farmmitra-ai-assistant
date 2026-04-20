@@ -23,25 +23,54 @@ Deno.serve(async (req) => {
       waterAvailability,
       budget,
       rainfall,
+      season,
       userId,
     } = body ?? {};
 
-    if (!locality || !areaAcres || !soilType || !waterAvailability || !budget || !rainfall) {
+    if (!locality || !areaAcres || !soilType || !waterAvailability || !budget || !rainfall || !season) {
       return new Response(
         JSON.stringify({ error: "Missing required farm input fields." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const message = `I am a farmer seeking crop and farming recommendations.
+    const message = `You are FarmMitra.Ai, a friendly expert agricultural advisor for Indian farmers.
+
+Farmer's profile:
 - Locality: ${locality}
 - Area size: ${areaAcres} acres
 - Soil type: ${soilType}
 - Water availability: ${waterAvailability}
 - Budget: ₹${budget}
-- Annual rainfall: ${rainfall} mm
+- Rainfall level: ${rainfall}
+- Current season: ${season}
 
-Please suggest the most suitable crops, expected yield, water/fertilizer practices, and an estimated cost-vs-profit breakdown for my conditions. Keep it concise, practical, and structured.`;
+Respond in **well-structured GitHub-flavored Markdown** so it renders beautifully. Use this exact structure:
+
+# 🌾 Your Personalized Farm Plan
+
+## 🌱 Recommended Crops
+A short intro line, then a markdown **table** with columns: Crop | Why it fits | Expected Yield (per acre) | Approx. Market Price.
+
+## 💧 Water & Irrigation
+- Bullet points with practical irrigation tips suited to the water level and season.
+
+## 🧪 Soil & Fertilizer Plan
+- Bullet points: organic + chemical fertilizer schedule, soil prep tips.
+
+## 📅 Seasonal Calendar
+A small table: Stage | Timeline | Action.
+
+## 💰 Cost vs Profit (for ${areaAcres} acres)
+A markdown table: Item | Estimated Cost (₹) | Notes. End with a **bold** estimated net profit range.
+
+## ⚠️ Risks & Tips
+- 3-5 concise risk-mitigation bullets.
+
+## ✅ Quick Summary
+2-3 sentence recap a farmer can act on today.
+
+Keep tone warm, confident, and practical. Use emojis sparingly in headings only. Use **bold** for key numbers. Do NOT wrap the whole reply in a code block.`;
 
     const sessionId = `69e59daebf7ea7a61d8e5245-${crypto.randomUUID()}`;
 
