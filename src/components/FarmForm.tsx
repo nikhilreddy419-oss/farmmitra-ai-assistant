@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type FarmInput = {
   locality: string;
@@ -40,14 +41,21 @@ const FarmForm = () => {
     }
     setLoading(true);
     setResult(null);
-    // Placeholder until API is wired up
-    setTimeout(() => {
+    try {
+      const { data: res, error } = await supabase.functions.invoke("farm-recommend", {
+        body: data,
+      });
+      if (error) throw error;
+      if ((res as any)?.error) throw new Error((res as any).error);
+      setResult((res as any)?.recommendation ?? "No recommendation returned.");
+      toast.success("Recommendations ready!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Failed to get recommendations");
+      setResult(null);
+    } finally {
       setLoading(false);
-      setResult(
-        "AI recommendations will appear here once the API is connected. Please share the API endpoint and key you'd like to use, and I'll wire it in."
-      );
-      toast.success("Inputs captured. Connect an API to get live recommendations.");
-    }, 900);
+    }
   };
 
   return (
