@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
       budget,
       rainfall,
       season,
+      language,
       userId,
     } = body ?? {};
 
@@ -34,7 +35,16 @@ Deno.serve(async (req) => {
       );
     }
 
+    const langMap: Record<string, string> = {
+      en: "English",
+      hi: "Hindi (हिन्दी)",
+      te: "Telugu (తెలుగు)",
+    };
+    const responseLanguage = langMap[language] || "English";
+
     const message = `You are FarmMitra.Ai, a friendly expert agricultural advisor for Indian farmers.
+
+IMPORTANT: Respond ENTIRELY in ${responseLanguage}. All headings, table contents, bullets and prose must be in ${responseLanguage}. Keep emojis and numbers as-is.
 
 Farmer's profile:
 - Locality: ${locality}
@@ -45,7 +55,7 @@ Farmer's profile:
 - Rainfall level: ${rainfall}
 - Current season: ${season}
 
-Respond in **well-structured GitHub-flavored Markdown** so it renders beautifully. Use this exact structure:
+Respond in **well-structured GitHub-flavored Markdown** so it renders beautifully. Use this exact structure (translate the section headings into ${responseLanguage}):
 
 # 🌾 Your Personalized Farm Plan
 
@@ -70,7 +80,7 @@ A markdown table: Item | Estimated Cost (₹) | Notes. End with a **bold** estim
 ## ✅ Quick Summary
 2-3 sentence recap a farmer can act on today.
 
-Keep tone warm, confident, and practical. Use emojis sparingly in headings only. Use **bold** for key numbers. Do NOT wrap the whole reply in a code block.`;
+Keep tone warm, confident, and practical. Use emojis sparingly in headings only. Use **bold** for key numbers. Do NOT wrap the whole reply in a code block. Remember: write everything in ${responseLanguage}.`;
 
     const sessionId = `69e59daebf7ea7a61d8e5245-${crypto.randomUUID()}`;
 
