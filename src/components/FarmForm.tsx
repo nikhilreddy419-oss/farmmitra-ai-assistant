@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLanguage } from "@/contexts/LanguageContext";
+import VoiceButton from "@/components/VoiceButton";
 
 export type FarmInput = {
   locality: string;
@@ -81,24 +82,30 @@ const FarmForm = () => {
       <CardContent>
         <form onSubmit={handleSubmit} className="grid gap-5 md:grid-cols-2">
           <Field icon={<MapPin className="h-4 w-4" />} label={tr.form.locality} htmlFor="locality">
-            <Input
-              id="locality"
-              placeholder={tr.form.localityPh}
-              value={data.locality}
-              onChange={(e) => update("locality", e.target.value)}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="locality"
+                placeholder={tr.form.localityPh}
+                value={data.locality}
+                onChange={(e) => update("locality", e.target.value)}
+              />
+              <VoiceButton onTranscript={(t) => update("locality", t)} />
+            </div>
           </Field>
 
           <Field icon={<Ruler className="h-4 w-4" />} label={tr.form.area} htmlFor="area">
-            <Input
-              id="area"
-              type="number"
-              min="0"
-              step="0.1"
-              placeholder={tr.form.areaPh}
-              value={data.areaAcres}
-              onChange={(e) => update("areaAcres", e.target.value)}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="area"
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder={tr.form.areaPh}
+                value={data.areaAcres}
+                onChange={(e) => update("areaAcres", e.target.value)}
+              />
+              <VoiceButton numeric onTranscript={(t) => update("areaAcres", t)} />
+            </div>
           </Field>
 
           <Field icon={<Layers className="h-4 w-4" />} label={tr.form.soil} htmlFor="soil">
@@ -124,14 +131,17 @@ const FarmForm = () => {
           </Field>
 
           <Field icon={<Wallet className="h-4 w-4" />} label={tr.form.budget} htmlFor="budget">
-            <Input
-              id="budget"
-              type="number"
-              min="0"
-              placeholder={tr.form.budgetPh}
-              value={data.budget}
-              onChange={(e) => update("budget", e.target.value)}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="budget"
+                type="number"
+                min="0"
+                placeholder={tr.form.budgetPh}
+                value={data.budget}
+                onChange={(e) => update("budget", e.target.value)}
+              />
+              <VoiceButton numeric onTranscript={(t) => update("budget", t)} />
+            </div>
           </Field>
 
           <Field icon={<CloudRain className="h-4 w-4" />} label={tr.form.rainfall} htmlFor="rain">
