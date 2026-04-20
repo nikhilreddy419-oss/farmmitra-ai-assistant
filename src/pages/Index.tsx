@@ -3,6 +3,7 @@ import heroImg from "@/assets/hero-farm.jpg";
 import FarmForm from "@/components/FarmForm";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RecommendationHistory from "@/components/RecommendationHistory";
+import UserMenu from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { Leaf, Sprout, Sun, ShieldCheck, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -32,6 +33,7 @@ const Index = () => {
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
             <Button variant="secondary" size="sm" onClick={scrollToForm} className="hidden sm:inline-flex">{tr.nav.start}</Button>
+            <UserMenu />
           </div>
         </div>
       </header>
