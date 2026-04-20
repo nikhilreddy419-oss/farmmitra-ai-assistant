@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLanguage } from "@/contexts/LanguageContext";
 import VoiceButton from "@/components/VoiceButton";
+import SpeakButton from "@/components/SpeakButton";
 
 export type FarmInput = {
   locality: string;
@@ -182,9 +183,12 @@ const FarmForm = () => {
 
         {result && (
           <div className="mt-8 rounded-2xl border border-border bg-gradient-card p-6 md:p-8 shadow-soft animate-fade-up">
-            <div className="flex items-center gap-2 mb-4 text-primary">
-              <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.resultLabel}</span>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 text-primary">
+                <Sparkles className="h-5 w-5" />
+                <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.resultLabel}</span>
+              </div>
+              <SpeakButton text={result} />
             </div>
             <article className="prose prose-green max-w-none
               prose-headings:font-display prose-headings:text-foreground
