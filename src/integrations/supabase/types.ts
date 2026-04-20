@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      recommendations: {
+        Row: {
+          area_acres: string
+          budget: string
+          created_at: string
+          id: string
+          language: string
+          locality: string
+          rainfall: string
+          recommendation: string
+          season: string
+          session_id: string
+          soil_type: string
+          water_availability: string
+        }
+        Insert: {
+          area_acres: string
+          budget: string
+          created_at?: string
+          id?: string
+          language?: string
+          locality: string
+          rainfall: string
+          recommendation: string
+          season: string
+          session_id: string
+          soil_type: string
+          water_availability: string
+        }
+        Update: {
+          area_acres?: string
+          budget?: string
+          created_at?: string
+          id?: string
+          language?: string
+          locality?: string
+          rainfall?: string
+          recommendation?: string
+          season?: string
+          session_id?: string
+          soil_type?: string
+          water_availability?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
