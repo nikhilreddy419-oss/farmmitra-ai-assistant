@@ -14,6 +14,7 @@ import VoiceButton from "@/components/VoiceButton";
 import SpeakButton from "@/components/SpeakButton";
 import PdfDownloadButton from "@/components/PdfDownloadButton";
 import { getSessionId } from "@/lib/session";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type FarmInput = {
   locality: string;
@@ -39,6 +40,7 @@ type Props = { onSaved?: () => void };
 
 const FarmForm = ({ onSaved }: Props) => {
   const { tr, lang } = useLanguage();
+  const { user } = useAuth();
   const [data, setData] = useState<FarmInput>(initial);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -67,6 +69,7 @@ const FarmForm = ({ onSaved }: Props) => {
       try {
         const { error: insertErr } = await supabase.from("recommendations").insert({
           session_id: getSessionId(),
+          user_id: user?.id ?? null,
           locality: data.locality,
           area_acres: data.areaAcres,
           soil_type: data.soilType,

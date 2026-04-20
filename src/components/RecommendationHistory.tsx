@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { History, Loader2, Eye, Trash2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getSessionId } from "@/lib/session";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import {
@@ -40,19 +40,20 @@ type Props = { refreshKey: number };
 
 const RecommendationHistory = ({ refreshKey }: Props) => {
   const { lang } = useLanguage();
+  const { user } = useAuth();
   const labels = LABELS[lang] ?? LABELS.en;
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState<Row | null>(null);
 
   const load = async () => {
+    if (!user) { setRows([]); return; }
     setLoading(true);
     try {
-      const sessionId = getSessionId();
       const { data, error } = await supabase
         .from("recommendations")
         .select("id, created_at, locality, area_acres, soil_type, budget, season, language, recommendation")
-        .eq("session_id", sessionId)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -65,14 +66,18 @@ const RecommendationHistory = ({ refreshKey }: Props) => {
     }
   };
 
-  useEffect(() => { load(); }, [refreshKey]);
+  useEffect(() => { load(); }, [refreshKey, user?.id]);
 
-  const clearLocal = () => {
-    // We can't delete public rows under our RLS — clear the device's session id so
-    // the history view becomes empty for this browser. Old rows remain in DB orphaned.
-    localStorage.removeItem("fm-session-id");
-    setRows([]);
-    toast.success(labels.cleared);
+  const clearLocal = async () => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from("recommendations").delete().eq("user_id", user.id);
+      if (error) throw error;
+      setRows([]);
+      toast.success(labels.cleared);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to clear history");
+    }
   };
 
   return (
