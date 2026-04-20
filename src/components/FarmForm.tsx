@@ -9,6 +9,7 @@ import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2, Ca
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type FarmInput = {
   locality: string;
@@ -31,6 +32,7 @@ const initial: FarmInput = {
 };
 
 const FarmForm = () => {
+  const { tr, lang } = useLanguage();
   const [data, setData] = useState<FarmInput>(initial);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -40,22 +42,22 @@ const FarmForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!data.locality || !data.areaAcres || !data.soilType || !data.waterAvailability || !data.budget || !data.rainfall || !data.season) {
-      toast.error("Please fill in all fields");
+      toast.error(tr.form.fillAll);
       return;
     }
     setLoading(true);
     setResult(null);
     try {
       const { data: res, error } = await supabase.functions.invoke("farm-recommend", {
-        body: data,
+        body: { ...data, language: lang },
       });
       if (error) throw error;
       if ((res as any)?.error) throw new Error((res as any).error);
       setResult((res as any)?.recommendation ?? "No recommendation returned.");
-      toast.success("Recommendations ready!");
+      toast.success(tr.form.ready);
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.message || "Failed to get recommendations");
+      toast.error(err?.message || tr.form.failed);
       setResult(null);
     } finally {
       setLoading(false);
@@ -67,95 +69,89 @@ const FarmForm = () => {
       <CardHeader className="space-y-2">
         <div className="flex items-center gap-2 text-primary">
           <Sprout className="h-5 w-5" />
-          <span className="text-sm font-semibold uppercase tracking-wider">Smart Farm Advisor</span>
+          <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.eyebrow}</span>
         </div>
         <CardTitle className="font-display text-3xl md:text-4xl text-foreground">
-          Tell us about your farm
+          {tr.form.title}
         </CardTitle>
         <CardDescription className="text-base">
-          Share a few details and FarmMitra.Ai will suggest the best crops and practices for you.
+          {tr.form.desc}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="grid gap-5 md:grid-cols-2">
-          <Field icon={<MapPin className="h-4 w-4" />} label="Locality" htmlFor="locality">
+          <Field icon={<MapPin className="h-4 w-4" />} label={tr.form.locality} htmlFor="locality">
             <Input
               id="locality"
-              placeholder="e.g. Pune, Maharashtra"
+              placeholder={tr.form.localityPh}
               value={data.locality}
               onChange={(e) => update("locality", e.target.value)}
             />
           </Field>
 
-          <Field icon={<Ruler className="h-4 w-4" />} label="Area size (acres)" htmlFor="area">
+          <Field icon={<Ruler className="h-4 w-4" />} label={tr.form.area} htmlFor="area">
             <Input
               id="area"
               type="number"
               min="0"
               step="0.1"
-              placeholder="e.g. 2.5"
+              placeholder={tr.form.areaPh}
               value={data.areaAcres}
               onChange={(e) => update("areaAcres", e.target.value)}
             />
           </Field>
 
-          <Field icon={<Layers className="h-4 w-4" />} label="Soil type" htmlFor="soil">
+          <Field icon={<Layers className="h-4 w-4" />} label={tr.form.soil} htmlFor="soil">
             <Select value={data.soilType} onValueChange={(v) => update("soilType", v)}>
-              <SelectTrigger id="soil"><SelectValue placeholder="Select soil type" /></SelectTrigger>
+              <SelectTrigger id="soil"><SelectValue placeholder={tr.form.soilPh} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="alluvial">Alluvial</SelectItem>
-                <SelectItem value="black">Black (Regur)</SelectItem>
-                <SelectItem value="red">Red</SelectItem>
-                <SelectItem value="laterite">Laterite</SelectItem>
-                <SelectItem value="sandy">Sandy</SelectItem>
-                <SelectItem value="clay">Clay</SelectItem>
-                <SelectItem value="loamy">Loamy</SelectItem>
+                {Object.entries(tr.form.soilOptions).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
 
-          <Field icon={<Droplets className="h-4 w-4" />} label="Water availability" htmlFor="water">
+          <Field icon={<Droplets className="h-4 w-4" />} label={tr.form.water} htmlFor="water">
             <Select value={data.waterAvailability} onValueChange={(v) => update("waterAvailability", v)}>
-              <SelectTrigger id="water"><SelectValue placeholder="Select water availability" /></SelectTrigger>
+              <SelectTrigger id="water"><SelectValue placeholder={tr.form.waterPh} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low (rainfed only)</SelectItem>
-                <SelectItem value="medium">Medium (seasonal source)</SelectItem>
-                <SelectItem value="high">High (canal / borewell)</SelectItem>
+                {Object.entries(tr.form.waterOptions).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
 
-          <Field icon={<Wallet className="h-4 w-4" />} label="Budget (₹)" htmlFor="budget">
+          <Field icon={<Wallet className="h-4 w-4" />} label={tr.form.budget} htmlFor="budget">
             <Input
               id="budget"
               type="number"
               min="0"
-              placeholder="e.g. 50000"
+              placeholder={tr.form.budgetPh}
               value={data.budget}
               onChange={(e) => update("budget", e.target.value)}
             />
           </Field>
 
-          <Field icon={<CloudRain className="h-4 w-4" />} label="Rainfall" htmlFor="rain">
+          <Field icon={<CloudRain className="h-4 w-4" />} label={tr.form.rainfall} htmlFor="rain">
             <Select value={data.rainfall} onValueChange={(v) => update("rainfall", v)}>
-              <SelectTrigger id="rain"><SelectValue placeholder="Select rainfall level" /></SelectTrigger>
+              <SelectTrigger id="rain"><SelectValue placeholder={tr.form.rainfallPh} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
+                {Object.entries(tr.form.rainfallOptions).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
 
-          <Field icon={<CalendarDays className="h-4 w-4" />} label="Season" htmlFor="season">
+          <Field icon={<CalendarDays className="h-4 w-4" />} label={tr.form.season} htmlFor="season">
             <Select value={data.season} onValueChange={(v) => update("season", v)}>
-              <SelectTrigger id="season"><SelectValue placeholder="Select current season" /></SelectTrigger>
+              <SelectTrigger id="season"><SelectValue placeholder={tr.form.seasonPh} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="summer">Summer</SelectItem>
-                <SelectItem value="monsoon">Monsoon (Kharif)</SelectItem>
-                <SelectItem value="post-monsoon">Post-Monsoon</SelectItem>
-                <SelectItem value="winter">Winter (Rabi)</SelectItem>
-                <SelectItem value="spring">Spring (Zaid)</SelectItem>
+                {Object.entries(tr.form.seasonOptions).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
@@ -163,13 +159,13 @@ const FarmForm = () => {
           <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
             <Button type="submit" variant="hero" size="xl" className="flex-1" disabled={loading}>
               {loading ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Analyzing…</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> {tr.form.analyzing}</>
               ) : (
-                <><Sprout className="h-4 w-4" /> Get Recommendations</>
+                <><Sprout className="h-4 w-4" /> {tr.form.submit}</>
               )}
             </Button>
             <Button type="button" variant="outline" size="xl" onClick={() => { setData(initial); setResult(null); }}>
-              Reset
+              {tr.form.reset}
             </Button>
           </div>
         </form>
@@ -178,7 +174,7 @@ const FarmForm = () => {
           <div className="mt-8 rounded-2xl border border-border bg-gradient-card p-6 md:p-8 shadow-soft animate-fade-up">
             <div className="flex items-center gap-2 mb-4 text-primary">
               <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-semibold uppercase tracking-wider">AI Recommendation</span>
+              <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.resultLabel}</span>
             </div>
             <article className="prose prose-green max-w-none
               prose-headings:font-display prose-headings:text-foreground
