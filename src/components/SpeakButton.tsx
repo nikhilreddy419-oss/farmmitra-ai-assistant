@@ -3,6 +3,7 @@ import { Play, Pause, Square, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const LOCALE: Record<string, string> = {
   en: "en-IN",
@@ -141,6 +142,7 @@ const SpeakButton = ({ text }: Props) => {
   const [state, setState] = useState<"idle" | "loading" | "speaking" | "paused">("idle");
   const queueRef = useRef<SpeechSynthesisUtterance[]>([]);
   const cancelledRef = useRef(false);
+  const summaryCacheRef = useRef<{ key: string; summary: string } | null>(null);
 
   // Stop on unmount / when text or language changes
   useEffect(() => {
@@ -157,6 +159,22 @@ const SpeakButton = ({ text }: Props) => {
     setState("idle");
   }, [text, lang, supported]);
 
+  const fetchSummary = async (): Promise<string> => {
+    const key = `${lang}::${text}`;
+    if (summaryCacheRef.current?.key === key) {
+      return summaryCacheRef.current.summary;
+    }
+    const { data, error } = await supabase.functions.invoke("summarize-recommendation", {
+      body: { text, language: lang },
+    });
+    if (error) throw error;
+    if ((data as any)?.error) throw new Error((data as any).error);
+    const summary: string = (data as any)?.summary?.trim() || "";
+    if (!summary) throw new Error("Empty summary");
+    summaryCacheRef.current = { key, summary };
+    return summary;
+  };
+
   const handlePlay = async () => {
     if (!supported) return;
     const synth = window.speechSynthesis;
@@ -171,6 +189,16 @@ const SpeakButton = ({ text }: Props) => {
     cancelledRef.current = false;
     synth.cancel();
 
+    let summary = "";
+    try {
+      summary = await fetchSummary();
+    } catch (err: any) {
+      console.error("summary failed, falling back to full text:", err);
+      toast.error(err?.message || "Could not generate summary, reading full text");
+      summary = stripMarkdown(text);
+    }
+    if (cancelledRef.current) return;
+
     const voices = await waitForVoices();
     if (cancelledRef.current) return;
 
@@ -183,7 +211,7 @@ const SpeakButton = ({ text }: Props) => {
       return;
     }
 
-    const plain = stripMarkdown(text);
+    const plain = stripMarkdown(summary);
     if (!plain) {
       setState("idle");
       return;
