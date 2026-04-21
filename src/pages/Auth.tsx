@@ -19,7 +19,7 @@ const COPY: Record<string, any> = {
     google: "Continue with Google", or: "or",
     signInBtn: "Sign in", signUpBtn: "Create account",
     signedIn: "Signed in!", signedUp: "Account created!",
-    backHome: "← Back to home",
+    backHome: "← Back to home", forgot: "Forgot password?",
   },
   hi: {
     title: "FarmMitra.Ai में आपका स्वागत है", desc: "अपनी सिफ़ारिशें सभी डिवाइस पर सिंक करने के लिए साइन इन करें।",
@@ -27,7 +27,7 @@ const COPY: Record<string, any> = {
     google: "Google से जारी रखें", or: "या",
     signInBtn: "साइन इन करें", signUpBtn: "खाता बनाएँ",
     signedIn: "साइन इन हो गया!", signedUp: "खाता बन गया!",
-    backHome: "← होम पर वापस जाएँ",
+    backHome: "← होम पर वापस जाएँ", forgot: "पासवर्ड भूल गए?",
   },
   te: {
     title: "FarmMitra.Ai కి స్వాగతం", desc: "మీ సిఫారసులను అన్ని పరికరాలలో సింక్ చేయడానికి సైన్ ఇన్ చేయండి.",
@@ -35,7 +35,7 @@ const COPY: Record<string, any> = {
     google: "Google తో కొనసాగించండి", or: "లేదా",
     signInBtn: "సైన్ ఇన్ చేయండి", signUpBtn: "ఖాతా సృష్టించండి",
     signedIn: "సైన్ ఇన్ అయింది!", signedUp: "ఖాతా సృష్టించబడింది!",
-    backHome: "← హోమ్‌కి తిరిగి",
+    backHome: "← హోమ్‌కి తిరిగి", forgot: "పాస్‌వర్డ్ మర్చిపోయారా?",
   },
 };
 
@@ -165,6 +165,11 @@ const Auth = () => {
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : c.signInBtn}
                   </Button>
+                  <div className="text-right">
+                    <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-smooth">
+                      {c.forgot}
+                    </Link>
+                  </div>
                 </form>
               </TabsContent>
 
