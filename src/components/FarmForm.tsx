@@ -174,18 +174,15 @@ const FarmForm = ({ onSaved }: Props) => {
           </Field>
 
           <Field icon={<Ruler className="h-4 w-4" />} label={tr.form.area} htmlFor="area">
-            <div className="flex gap-2">
-              <Input
-                id="area"
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder={tr.form.areaPh}
-                value={data.areaAcres}
-                onChange={(e) => update("areaAcres", e.target.value)}
-              />
-              <VoiceButton numeric onTranscript={(t) => update("areaAcres", t)} />
-            </div>
+            <Input
+              id="area"
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder={tr.form.areaPh}
+              value={data.areaAcres}
+              onChange={(e) => update("areaAcres", e.target.value)}
+            />
           </Field>
 
           <Field icon={<Layers className="h-4 w-4" />} label={tr.form.soil} htmlFor="soil">
@@ -211,17 +208,14 @@ const FarmForm = ({ onSaved }: Props) => {
           </Field>
 
           <Field icon={<Wallet className="h-4 w-4" />} label={tr.form.budget} htmlFor="budget">
-            <div className="flex gap-2">
-              <Input
-                id="budget"
-                type="number"
-                min="0"
-                placeholder={tr.form.budgetPh}
-                value={data.budget}
-                onChange={(e) => update("budget", e.target.value)}
-              />
-              <VoiceButton numeric onTranscript={(t) => update("budget", t)} />
-            </div>
+            <Input
+              id="budget"
+              type="number"
+              min="0"
+              placeholder={tr.form.budgetPh}
+              value={data.budget}
+              onChange={(e) => update("budget", e.target.value)}
+            />
           </Field>
 
           <Field icon={<CloudRain className="h-4 w-4" />} label={tr.form.rainfall} htmlFor="rain">
