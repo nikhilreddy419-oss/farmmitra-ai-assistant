@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2, CalendarDays, Sparkles } from "lucide-react";
+import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2, CalendarDays, Sparkles, LocateFixed } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
