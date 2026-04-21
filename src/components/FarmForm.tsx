@@ -170,7 +170,6 @@ const FarmForm = ({ onSaved }: Props) => {
               >
                 {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
               </Button>
-              <VoiceButton onTranscript={(t) => update("locality", t)} />
             </div>
           </Field>
 
@@ -269,7 +268,6 @@ const FarmForm = ({ onSaved }: Props) => {
                 <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.resultLabel}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <SpeakButton text={result} />
                 <PdfDownloadButton
                   targetId="recommendation-printable"
                   fileBaseName={`FarmMitra-${data.locality || "plan"}`.replace(/[^\w\-]+/g, "_")}
