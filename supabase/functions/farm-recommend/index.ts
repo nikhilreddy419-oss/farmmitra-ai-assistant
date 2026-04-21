@@ -75,21 +75,34 @@ TRANSLATION RULES (CRITICAL):
 IMPORTANT: Respond ENTIRELY in ${responseLanguage}. Every single word — including crop names, farming terms, fertilizer names, units (acre, quintal, kg), and section headings — must be the NATIVE word in ${responseLanguage}, NOT an English word written in the local script. Do NOT transliterate (e.g. do NOT write "टोमेटो" — use "टमाटर"; do NOT write "టొమాటో" — use "టమోటా").
 ${langRules[language] || ""}
 
-CROP SELECTION RULES (VERY IMPORTANT):
-- Consider the FULL spectrum of Indian crops, NOT just millets and pulses.
-- Cereals: Rice/Paddy, Wheat, Maize, Sorghum (Jowar), Pearl Millet (Bajra), Finger Millet (Ragi), Barley.
-- Pulses: Chickpea (Chana), Pigeon Pea (Tur/Arhar), Black Gram (Urad), Green Gram (Moong), Lentil (Masoor).
-- Oilseeds: Groundnut, Mustard, Soybean, Sunflower, Sesame, Castor.
-- Cash crops: Sugarcane, Cotton, Tobacco, Jute.
-- Vegetables: Tomato, Onion, Potato, Brinjal, Okra (Bhindi), Cabbage, Cauliflower, Chilli, Cucumber, Pumpkin, Bottle gourd, Spinach.
-- Fruits: Banana, Mango, Papaya, Guava, Pomegranate, Watermelon, Grapes, Citrus.
-- Spices & commercial: Turmeric, Ginger, Coriander, Cumin, Cardamom, Black pepper.
-- Floriculture: Marigold, Rose, Jasmine.
-- Recommend 3–5 crops that best fit the GIVEN locality, soil, water, rainfall, season and budget. Pick the most suitable mix from the above categories — do NOT default to millets and pulses unless the inputs (low water + low rainfall + low budget + arid soil) clearly demand them.
-- For high water + good budget + fertile soil → prefer high-value crops like Rice, Sugarcane, Banana, Vegetables.
-- For Kharif season → consider Rice, Maize, Cotton, Soybean, Pigeon Pea, Groundnut, Bajra.
-- For Rabi season → consider Wheat, Mustard, Chickpea, Barley, Potato, Onion.
-- For Zaid/Summer → consider Watermelon, Cucumber, Moong, Vegetables.
+CROP SELECTION RULES (VERY IMPORTANT — STRICTLY ENFORCE):
+- You MUST recommend a BALANCED, DIVERSE mix of EXACTLY 4–5 crops drawn from AT LEAST 3 DIFFERENT categories below. Never recommend 3+ crops from the same category. Never recommend only millets and pulses.
+- Categories to choose from:
+  1. Cereals: Rice/Paddy, Wheat, Maize, Sorghum (Jowar), Pearl Millet (Bajra), Finger Millet (Ragi), Barley.
+  2. Pulses: Chickpea (Chana), Pigeon Pea (Tur/Arhar), Black Gram (Urad), Green Gram (Moong), Lentil (Masoor).
+  3. Oilseeds: Groundnut, Mustard, Soybean, Sunflower, Sesame, Castor.
+  4. Cash crops: Sugarcane, Cotton, Tobacco, Jute.
+  5. Vegetables: Tomato, Onion, Potato, Brinjal, Okra (Bhindi), Cabbage, Cauliflower, Chilli, Cucumber, Pumpkin, Bottle gourd, Spinach.
+  6. Fruits: Banana, Mango, Papaya, Guava, Pomegranate, Watermelon, Grapes, Citrus.
+  7. Spices & commercial: Turmeric, Ginger, Coriander, Cumin, Cardamom, Black pepper.
+  8. Floriculture: Marigold, Rose, Jasmine.
+
+MANDATORY MIX RULES:
+- ALWAYS include AT LEAST 1 cereal (Rice / Wheat / Maize / Sorghum / Bajra / Ragi) appropriate to the season.
+- ALWAYS include AT LEAST 1 vegetable OR 1 cash crop (Sugarcane / Cotton / Tomato / Onion / Chilli / Potato etc.) for income diversification.
+- ALWAYS include AT LEAST 1 pulse OR oilseed for soil health and rotation.
+- Optionally add 1 fruit / spice / floriculture crop if the inputs (water, budget, soil) support it.
+- Millets (Bajra, Jowar, Ragi) should ONLY dominate when ALL of: low water + low rainfall + low budget + arid/sandy soil are true. Otherwise treat them as just one option among many.
+
+INPUT-AWARE DEFAULTS:
+- High water + good budget + fertile (loamy/alluvial/black) soil → lead with Rice, Sugarcane, Banana, Tomato/Onion, plus 1 pulse for rotation.
+- Medium water + medium budget → Maize + Cotton/Soybean + a vegetable + a pulse.
+- Low water + low rainfall + arid soil → Bajra/Jowar/Ragi + Pigeon Pea/Moong + Groundnut/Castor + drought-tolerant vegetable.
+- Kharif season → Rice, Maize, Cotton, Soybean, Pigeon Pea, Groundnut, Bajra, Chilli, Turmeric.
+- Rabi season → Wheat, Mustard, Chickpea, Barley, Potato, Onion, Tomato, Coriander.
+- Zaid/Summer → Watermelon, Cucumber, Moong, Okra, leafy vegetables.
+
+Before writing the table, internally check: "Do my 4–5 crops span at least 3 different categories AND include at least one cereal AND at least one vegetable/cash crop?" If not, REVISE before responding.
 
 Farmer's profile:
 - Locality: ${locality}
