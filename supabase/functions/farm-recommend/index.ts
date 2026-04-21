@@ -118,8 +118,8 @@ Respond in **well-structured GitHub-flavored Markdown** so it renders beautifull
 # 🌾 [Title in ${responseLanguage}]
 
 ## 🌱 [Recommended Crops — in ${responseLanguage}]
-A short intro line, then a markdown **table** with columns (translate column names): Crop | Why it fits | Expected Yield (per acre) | Approx. Market Price.
-Include a DIVERSE mix of 3–5 crops from different categories (cereal, pulse/oilseed, vegetable or cash crop) appropriate to the inputs.
+A short intro line, then a markdown **table** with columns (translate column names): Crop | Category | Why it fits | Expected Yield (per acre) | Approx. Market Price.
+The table MUST contain 4–5 rows spanning at least 3 different categories (e.g. one Cereal, one Vegetable/Cash crop, one Pulse/Oilseed, optionally one Fruit/Spice). Show the category name in the Category column so the diversity is visible.
 
 ## 💧 [Water & Irrigation — in ${responseLanguage}]
 - Bullet points with practical irrigation tips suited to the water level and season.
