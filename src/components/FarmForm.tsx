@@ -10,8 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLanguage } from "@/contexts/LanguageContext";
-import VoiceButton from "@/components/VoiceButton";
-import SpeakButton from "@/components/SpeakButton";
 import PdfDownloadButton from "@/components/PdfDownloadButton";
 import { getSessionId } from "@/lib/session";
 import { useAuth } from "@/contexts/AuthContext";
