@@ -75,6 +75,22 @@ TRANSLATION RULES (CRITICAL):
 IMPORTANT: Respond ENTIRELY in ${responseLanguage}. Every single word — including crop names, farming terms, fertilizer names, units (acre, quintal, kg), and section headings — must be the NATIVE word in ${responseLanguage}, NOT an English word written in the local script. Do NOT transliterate (e.g. do NOT write "टोमेटो" — use "टमाटर"; do NOT write "టొమాటో" — use "టమోటా").
 ${langRules[language] || ""}
 
+CROP SELECTION RULES (VERY IMPORTANT):
+- Consider the FULL spectrum of Indian crops, NOT just millets and pulses.
+- Cereals: Rice/Paddy, Wheat, Maize, Sorghum (Jowar), Pearl Millet (Bajra), Finger Millet (Ragi), Barley.
+- Pulses: Chickpea (Chana), Pigeon Pea (Tur/Arhar), Black Gram (Urad), Green Gram (Moong), Lentil (Masoor).
+- Oilseeds: Groundnut, Mustard, Soybean, Sunflower, Sesame, Castor.
+- Cash crops: Sugarcane, Cotton, Tobacco, Jute.
+- Vegetables: Tomato, Onion, Potato, Brinjal, Okra (Bhindi), Cabbage, Cauliflower, Chilli, Cucumber, Pumpkin, Bottle gourd, Spinach.
+- Fruits: Banana, Mango, Papaya, Guava, Pomegranate, Watermelon, Grapes, Citrus.
+- Spices & commercial: Turmeric, Ginger, Coriander, Cumin, Cardamom, Black pepper.
+- Floriculture: Marigold, Rose, Jasmine.
+- Recommend 3–5 crops that best fit the GIVEN locality, soil, water, rainfall, season and budget. Pick the most suitable mix from the above categories — do NOT default to millets and pulses unless the inputs (low water + low rainfall + low budget + arid soil) clearly demand them.
+- For high water + good budget + fertile soil → prefer high-value crops like Rice, Sugarcane, Banana, Vegetables.
+- For Kharif season → consider Rice, Maize, Cotton, Soybean, Pigeon Pea, Groundnut, Bajra.
+- For Rabi season → consider Wheat, Mustard, Chickpea, Barley, Potato, Onion.
+- For Zaid/Summer → consider Watermelon, Cucumber, Moong, Vegetables.
+
 Farmer's profile:
 - Locality: ${locality}
 - Area size: ${areaAcres} acres
@@ -90,6 +106,7 @@ Respond in **well-structured GitHub-flavored Markdown** so it renders beautifull
 
 ## 🌱 [Recommended Crops — in ${responseLanguage}]
 A short intro line, then a markdown **table** with columns (translate column names): Crop | Why it fits | Expected Yield (per acre) | Approx. Market Price.
+Include a DIVERSE mix of 3–5 crops from different categories (cereal, pulse/oilseed, vegetable or cash crop) appropriate to the inputs.
 
 ## 💧 [Water & Irrigation — in ${responseLanguage}]
 - Bullet points with practical irrigation tips suited to the water level and season.
