@@ -4,6 +4,7 @@ import FarmForm from "@/components/FarmForm";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RecommendationHistory from "@/components/RecommendationHistory";
 import UserMenu from "@/components/UserMenu";
+import ChatBot from "@/components/ChatBot";
 import { Button } from "@/components/ui/button";
 import { Leaf, Sprout, Sun, ShieldCheck, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -162,6 +163,8 @@ const Index = () => {
           <p>© {new Date().getFullYear()} FarmMitra.Ai — {tr.footer}</p>
         </div>
       </footer>
+
+      <ChatBot />
     </div>
   );
 };

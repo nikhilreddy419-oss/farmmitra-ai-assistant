@@ -10,8 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLanguage } from "@/contexts/LanguageContext";
-import VoiceButton from "@/components/VoiceButton";
-import SpeakButton from "@/components/SpeakButton";
 import PdfDownloadButton from "@/components/PdfDownloadButton";
 import { getSessionId } from "@/lib/session";
 import { useAuth } from "@/contexts/AuthContext";
@@ -172,23 +170,19 @@ const FarmForm = ({ onSaved }: Props) => {
               >
                 {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
               </Button>
-              <VoiceButton onTranscript={(t) => update("locality", t)} />
             </div>
           </Field>
 
           <Field icon={<Ruler className="h-4 w-4" />} label={tr.form.area} htmlFor="area">
-            <div className="flex gap-2">
-              <Input
-                id="area"
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder={tr.form.areaPh}
-                value={data.areaAcres}
-                onChange={(e) => update("areaAcres", e.target.value)}
-              />
-              <VoiceButton numeric onTranscript={(t) => update("areaAcres", t)} />
-            </div>
+            <Input
+              id="area"
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder={tr.form.areaPh}
+              value={data.areaAcres}
+              onChange={(e) => update("areaAcres", e.target.value)}
+            />
           </Field>
 
           <Field icon={<Layers className="h-4 w-4" />} label={tr.form.soil} htmlFor="soil">
@@ -214,17 +208,14 @@ const FarmForm = ({ onSaved }: Props) => {
           </Field>
 
           <Field icon={<Wallet className="h-4 w-4" />} label={tr.form.budget} htmlFor="budget">
-            <div className="flex gap-2">
-              <Input
-                id="budget"
-                type="number"
-                min="0"
-                placeholder={tr.form.budgetPh}
-                value={data.budget}
-                onChange={(e) => update("budget", e.target.value)}
-              />
-              <VoiceButton numeric onTranscript={(t) => update("budget", t)} />
-            </div>
+            <Input
+              id="budget"
+              type="number"
+              min="0"
+              placeholder={tr.form.budgetPh}
+              value={data.budget}
+              onChange={(e) => update("budget", e.target.value)}
+            />
           </Field>
 
           <Field icon={<CloudRain className="h-4 w-4" />} label={tr.form.rainfall} htmlFor="rain">
@@ -271,7 +262,6 @@ const FarmForm = ({ onSaved }: Props) => {
                 <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.resultLabel}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <SpeakButton text={result} />
                 <PdfDownloadButton
                   targetId="recommendation-printable"
                   fileBaseName={`FarmMitra-${data.locality || "plan"}`.replace(/[^\w\-]+/g, "_")}
