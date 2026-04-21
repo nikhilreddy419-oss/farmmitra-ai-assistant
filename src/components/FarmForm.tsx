@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2, CalendarDays, Sparkles } from "lucide-react";
+import { Sprout, MapPin, Ruler, Layers, Droplets, Wallet, CloudRain, Loader2, CalendarDays, Sparkles, LocateFixed } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -44,8 +44,51 @@ const FarmForm = ({ onSaved }: Props) => {
   const [data, setData] = useState<FarmInput>(initial);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
 
   const update = (k: keyof FarmInput, v: string) => setData((d) => ({ ...d, [k]: v }));
+
+  const detectLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Geolocation is not supported on this device");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const { latitude, longitude } = coords;
+          const acceptLang = lang === "hi" ? "hi" : lang === "te" ? "te" : "en";
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12&accept-language=${acceptLang}`,
+            { headers: { Accept: "application/json" } }
+          );
+          if (!res.ok) throw new Error("Reverse geocoding failed");
+          const json = await res.json();
+          const a = json.address || {};
+          const place = a.village || a.town || a.city || a.suburb || a.county || a.state_district || a.state || "";
+          const region = a.state || a.country || "";
+          const locality = [place, region].filter(Boolean).join(", ") || json.display_name || `${latitude.toFixed(3)}, ${longitude.toFixed(3)}`;
+          update("locality", locality);
+          toast.success("Location detected");
+        } catch (err: any) {
+          console.warn(err);
+          toast.error(err?.message || "Could not detect location");
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocating(false);
+        const msg =
+          err.code === err.PERMISSION_DENIED ? "Location permission denied"
+          : err.code === err.POSITION_UNAVAILABLE ? "Location unavailable"
+          : "Could not get location";
+        toast.error(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +161,17 @@ const FarmForm = ({ onSaved }: Props) => {
                 value={data.locality}
                 onChange={(e) => update("locality", e.target.value)}
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={detectLocation}
+                disabled={locating}
+                title="Use my location"
+                aria-label="Use my location"
+              >
+                {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+              </Button>
               <VoiceButton onTranscript={(t) => update("locality", t)} />
             </div>
           </Field>
