@@ -112,7 +112,7 @@ export default function LiveDashboard({ locality = "Hyderabad" }: { locality?: s
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-foreground" />
                 </span>
               </div>
-              <Button size="icon" variant="ghost" onClick={loadWeather} className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/10">
+              <Button size="icon" variant="ghost" onClick={() => loadWeather(true)} className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/10">
                 <RefreshCw className={cn("h-4 w-4", loadingW && "animate-spin")} />
               </Button>
             </div>
@@ -191,7 +191,7 @@ export default function LiveDashboard({ locality = "Hyderabad" }: { locality?: s
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                 </span>
               </div>
-              <Button size="icon" variant="ghost" onClick={loadMarket} className="h-8 w-8">
+              <Button size="icon" variant="ghost" onClick={() => loadMarket(true)} className="h-8 w-8">
                 <RefreshCw className={cn("h-4 w-4", loadingM && "animate-spin")} />
               </Button>
             </div>
