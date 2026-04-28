@@ -43,25 +43,25 @@ export default function LiveDashboard({ locality = "Hyderabad" }: { locality?: s
   const [errW, setErrW] = useState<string | null>(null);
   const [errM, setErrM] = useState<string | null>(null);
 
-  const loadWeather = useCallback(async () => {
+  const loadWeather = useCallback(async (force = false) => {
     setLoadingW(true); setErrW(null);
     try {
-      const { data, error } = await supabase.functions.invoke("weather-agent", { body: { locality } });
+      const { data, error } = await supabase.functions.invoke("weather-agent", { body: { locality, force } });
       if (error) throw error;
-      if (!data?.data) throw new Error("Agent returned no parseable data");
-      setWeather(data.data);
-    } catch (e: any) { setErrW(e.message || "Failed to load weather"); }
+      if (data?.data) setWeather(data.data);
+      else { setWeather(null); setErrW("Live weather is temporarily unavailable."); }
+    } catch (_e) { setErrW("Live weather is temporarily unavailable."); }
     finally { setLoadingW(false); }
   }, [locality]);
 
-  const loadMarket = useCallback(async () => {
+  const loadMarket = useCallback(async (force = false) => {
     setLoadingM(true); setErrM(null);
     try {
-      const { data, error } = await supabase.functions.invoke("market-agent", { body: { locality } });
+      const { data, error } = await supabase.functions.invoke("market-agent", { body: { locality, force } });
       if (error) throw error;
-      if (!data?.data) throw new Error("Agent returned no parseable data");
-      setMarket(data.data);
-    } catch (e: any) { setErrM(e.message || "Failed to load market"); }
+      if (data?.data) setMarket(data.data);
+      else { setMarket(null); setErrM("Live market data is temporarily unavailable."); }
+    } catch (_e) { setErrM("Live market data is temporarily unavailable."); }
     finally { setLoadingM(false); }
   }, [locality]);
 
@@ -112,7 +112,7 @@ export default function LiveDashboard({ locality = "Hyderabad" }: { locality?: s
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-foreground" />
                 </span>
               </div>
-              <Button size="icon" variant="ghost" onClick={loadWeather} className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/10">
+              <Button size="icon" variant="ghost" onClick={() => loadWeather(true)} className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/10">
                 <RefreshCw className={cn("h-4 w-4", loadingW && "animate-spin")} />
               </Button>
             </div>
@@ -191,7 +191,7 @@ export default function LiveDashboard({ locality = "Hyderabad" }: { locality?: s
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                 </span>
               </div>
-              <Button size="icon" variant="ghost" onClick={loadMarket} className="h-8 w-8">
+              <Button size="icon" variant="ghost" onClick={() => loadMarket(true)} className="h-8 w-8">
                 <RefreshCw className={cn("h-4 w-4", loadingM && "animate-spin")} />
               </Button>
             </div>
