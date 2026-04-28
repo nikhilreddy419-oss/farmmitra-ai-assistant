@@ -14,6 +14,22 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const Index = () => {
   const { tr } = useLanguage();
   const [historyKey, setHistoryKey] = useState(0);
+  const [locality, setLocality] = useState<string>("Hyderabad");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const uid = data.user?.id;
+        if (!uid) return;
+        const { data: prof } = await supabase.from("profiles").select("location").eq("user_id", uid).maybeSingle();
+        if (!cancelled && prof?.location) setLocality(prof.location);
+      } catch (_) {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const scrollToForm = () => document.getElementById("recommend")?.scrollIntoView({ behavior: "smooth" });
   const featureIcons = [Sprout, Sun, ShieldCheck];
 
