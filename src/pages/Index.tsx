@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import heroImg from "@/assets/hero-farm.jpg";
 import FarmForm from "@/components/FarmForm";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RecommendationHistory from "@/components/RecommendationHistory";
 import UserMenu from "@/components/UserMenu";
 import ChatBot from "@/components/ChatBot";
+import LiveDashboard from "@/components/LiveDashboard";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Leaf, Sprout, Sun, ShieldCheck, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -12,6 +14,22 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const Index = () => {
   const { tr } = useLanguage();
   const [historyKey, setHistoryKey] = useState(0);
+  const [locality, setLocality] = useState<string>("Hyderabad");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const uid = data.user?.id;
+        if (!uid) return;
+        const { data: prof } = await supabase.from("profiles").select("location").eq("user_id", uid).maybeSingle();
+        if (!cancelled && prof?.location) setLocality(prof.location);
+      } catch (_) {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const scrollToForm = () => document.getElementById("recommend")?.scrollIntoView({ behavior: "smooth" });
   const featureIcons = [Sprout, Sun, ShieldCheck];
 
@@ -141,6 +159,11 @@ const Index = () => {
             );
           })}
         </div>
+      </section>
+
+      {/* Live Dashboard — Weather + Market (powered by Lyzr agents) */}
+      <section id="live" className="container pb-12">
+        <LiveDashboard locality={locality} />
       </section>
 
       {/* Form */}
