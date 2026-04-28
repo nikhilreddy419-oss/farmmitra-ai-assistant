@@ -161,6 +161,11 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Live Dashboard — Weather + Market (powered by Lyzr agents) */}
+      <section id="live" className="container pb-12">
+        <LiveDashboard locality={locality} />
+      </section>
+
       {/* Form */}
       <section id="how" className="container pb-12">
         <FarmForm onSaved={() => setHistoryKey((k) => k + 1)} />
