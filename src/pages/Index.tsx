@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import heroImg from "@/assets/hero-farm.jpg";
 import FarmForm from "@/components/FarmForm";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RecommendationHistory from "@/components/RecommendationHistory";
 import UserMenu from "@/components/UserMenu";
 import ChatBot from "@/components/ChatBot";
+import LiveDashboard from "@/components/LiveDashboard";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Leaf, Sprout, Sun, ShieldCheck, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
