@@ -4,8 +4,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const AGENT_ID = "69d51cf25086335c9785c815";
-const LYZR_URL = "https://agent-prod.studio.lyzr.ai/v3/inference/chat/";
+const LYZR_AGENT_ID = "69d51cf25086335c9785c815";
+const LYZR_INFERENCE_URL = "https://agent-prod.studio.lyzr.ai/v3/inference/chat/";
+const LYZR_WEBHOOK_URL = "https://scheduler.studio.lyzr.ai/webhook-trigger/69f0df26e35ffb1f44ac41a9";
+const AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const TTL_MS = 10 * 60 * 1000;
 
 type Cached = { at: number; payload: unknown };
@@ -32,50 +34,73 @@ function tryParseJson(text: string): any | null {
   return null;
 }
 
-async function callLyzr(locality: string): Promise<{ raw: string; status: number }> {
-  const LYZR_API_KEY = Deno.env.get("LYZR_API_KEY")!;
-  const prompt = `Give the LIVE current crop market demand snapshot for "${locality}", India. Reply ONLY with strict JSON, no prose, no markdown:
-{"region":"${locality}","high_demand":[{"crop":"","trend":"up","price_inr_per_quintal":0,"note":""}],"medium_demand":[{"crop":"","trend":"flat","price_inr_per_quintal":0,"note":""}],"low_demand":[{"crop":"","trend":"down","price_inr_per_quintal":0,"note":""}],"insight":""}
-Use real Indian crops (Cotton, Paddy, Maize, Chilli, Groundnut, Turmeric, Tomato, Onion, Soybean, Tur dal, etc.). 2-4 crops per category.`;
-  const res = await fetch(LYZR_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": LYZR_API_KEY },
-    body: JSON.stringify({
-      user_id: "farmmitra@app",
-      agent_id: AGENT_ID,
-      session_id: `${AGENT_ID}-${crypto.randomUUID()}`,
-      message: prompt,
-    }),
-  });
-  const json = await res.json().catch(() => ({}));
-  return { raw: String(json?.response ?? ""), status: res.status };
+async function callLyzrInference(locality: string): Promise<string | null> {
+  const LYZR_API_KEY = Deno.env.get("LYZR_API_KEY");
+  if (!LYZR_API_KEY) return null;
+  try {
+    const prompt = `Live crop market demand snapshot for "${locality}", India. Strict JSON only:
+{"region":"${locality}","high_demand":[{"crop":"","trend":"up","price_inr_per_quintal":0,"note":""}],"medium_demand":[{"crop":"","trend":"flat","price_inr_per_quintal":0,"note":""}],"low_demand":[{"crop":"","trend":"down","price_inr_per_quintal":0,"note":""}],"insight":""}`;
+    const res = await fetch(LYZR_INFERENCE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": LYZR_API_KEY },
+      body: JSON.stringify({
+        user_id: "farmmitra@app",
+        agent_id: LYZR_AGENT_ID,
+        session_id: `${LYZR_AGENT_ID}-${crypto.randomUUID()}`,
+        message: prompt,
+      }),
+    });
+    if (!res.ok) {
+      console.warn("market-agent: Lyzr inference returned", res.status);
+      return null;
+    }
+    const j = await res.json().catch(() => ({}));
+    return String(j?.response ?? "") || null;
+  } catch (e) {
+    console.warn("market-agent: Lyzr inference threw", e);
+    return null;
+  }
 }
 
-async function normalizeWithAI(prose: string, locality: string): Promise<any | null> {
+async function triggerLyzrWebhook(locality: string) {
+  try {
+    await fetch(LYZR_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locality }),
+    });
+  } catch (_) { /* best effort */ }
+}
+
+async function generateMarket(locality: string, lyzrHint: string | null): Promise<any | null> {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) return null;
+  const sys = "You are an Indian agricultural mandi market analyst. Output ONLY one JSON object matching the schema. Use realistic current INR/quintal mandi prices for the given region. Use real Indian crop names. If hint text from another agent contains crop names or prices, prefer them.";
+  const user = `Region: ${locality}, India.
+Hint from agent (may be empty/prose):
+${lyzrHint || "(none)"}
+
+Return JSON exactly:
+{"region":"${locality}","high_demand":[{"crop":"","trend":"up","price_inr_per_quintal":0,"note":"short reason"}],"medium_demand":[{"crop":"","trend":"flat","price_inr_per_quintal":0,"note":"short reason"}],"low_demand":[{"crop":"","trend":"down","price_inr_per_quintal":0,"note":"short reason"}],"insight":"1-2 sentence market opportunity insight"}
+Rules: 2-4 crops per category. trend ∈ up|flat|down. Use real crop names: Cotton, Paddy, Maize, Chilli, Groundnut, Turmeric, Tomato, Onion, Soybean, Tur dal, Sugarcane, Banana, Sunflower, etc.`;
   try {
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch(AI_GATEWAY, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "Extract Indian crop market demand into the requested JSON schema. Use realistic current mandi prices (INR/quintal). Output ONLY JSON." },
-          { role: "user", content: `Region: ${locality}\nAgent text:\n${prose}\n\nReturn JSON exactly:\n{"region":"${locality}","high_demand":[{"crop":"","trend":"up","price_inr_per_quintal":0,"note":""}],"medium_demand":[{"crop":"","trend":"flat","price_inr_per_quintal":0,"note":""}],"low_demand":[{"crop":"","trend":"down","price_inr_per_quintal":0,"note":""}],"insight":""}\n2 to 4 entries per category. trend ∈ up|flat|down.` },
-        ],
+        messages: [{ role: "system", content: sys }, { role: "user", content: user }],
         response_format: { type: "json_object" },
       }),
     });
     if (!res.ok) {
-      console.error("AI normalize failed", res.status, await res.text());
+      console.error("market-agent: AI gateway", res.status, await res.text());
       return null;
     }
     const j = await res.json();
-    const content = j?.choices?.[0]?.message?.content ?? "";
-    return tryParseJson(content);
+    return tryParseJson(j?.choices?.[0]?.message?.content ?? "");
   } catch (e) {
-    console.error("AI normalize error", e);
+    console.error("market-agent: AI gateway threw", e);
     return null;
   }
 }
@@ -83,7 +108,6 @@ async function normalizeWithAI(prose: string, locality: string): Promise<any | n
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const LYZR_API_KEY = Deno.env.get("LYZR_API_KEY");
   let locality = "Telangana";
   let force = false;
   try {
@@ -98,31 +122,19 @@ Deno.serve(async (req) => {
     return ok({ ok: true, cached: true, ageMs: Date.now() - hit.at, ...((hit.payload as object) || {}) });
   }
 
-  if (!LYZR_API_KEY) {
-    return ok({ ok: false, fallback: true, error: "missing_api_key", data: null });
-  }
+  if (force) triggerLyzrWebhook(locality);
 
   try {
-    const { raw, status } = await callLyzr(locality);
-    console.log("market-agent lyzr status", status, "raw[0..400]:", raw.slice(0, 400));
+    const lyzrHint = await callLyzrInference(locality);
+    console.log("market-agent lyzr hint length:", lyzrHint?.length ?? 0);
+    const parsed = await generateMarket(locality, lyzrHint);
 
-    if (status !== 200) {
-      if (hit) return ok({ ok: true, cached: true, stale: true, ageMs: Date.now() - hit.at, ...((hit.payload as object) || {}) });
-      return ok({ ok: false, fallback: true, error: `agent_${status}`, data: null });
-    }
-
-    let parsed = tryParseJson(raw);
     if (!parsed || !Array.isArray(parsed.high_demand)) {
-      console.log("market-agent: agent returned prose, normalizing via AI gateway");
-      parsed = await normalizeWithAI(raw, locality);
-    }
-
-    if (!parsed) {
       if (hit) return ok({ ok: true, cached: true, stale: true, ageMs: Date.now() - hit.at, ...((hit.payload as object) || {}) });
-      return ok({ ok: false, fallback: true, error: "unparseable_response", data: null, raw: raw.slice(0, 500) });
+      return ok({ ok: false, fallback: true, error: "ai_generation_failed", data: null });
     }
 
-    const payload = { data: parsed };
+    const payload = { data: parsed, source: lyzrHint ? "lyzr+ai" : "ai" };
     cache.set(cacheKey, { at: Date.now(), payload });
     return ok({ ok: true, cached: false, ...payload });
   } catch (err) {
