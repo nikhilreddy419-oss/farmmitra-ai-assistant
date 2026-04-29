@@ -1,21 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, X, Send, Loader2, Sprout } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Sprout, Mic, MicOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const COPY: Record<string, { title: string; sub: string; ph: string; greet: string; open: string }> = {
+const COPY: Record<string, { title: string; sub: string; ph: string; greet: string; open: string; listening: string; voiceUnsupported: string }> = {
   en: {
     title: "Ask FarmMitra",
     sub: "Your farming assistant",
     ph: "Ask anything about your farm…",
     greet: "👋 Hi! I'm FarmMitra. Ask me about crops, soil, irrigation, fertilizers, pests, or market prices.",
     open: "Chat with FarmMitra",
+    listening: "Listening…",
+    voiceUnsupported: "Voice input not supported in this browser.",
   },
   hi: {
     title: "FarmMitra से पूछें",
@@ -23,6 +26,8 @@ const COPY: Record<string, { title: string; sub: string; ph: string; greet: stri
     ph: "अपने खेत के बारे में कुछ भी पूछें…",
     greet: "👋 नमस्ते! मैं FarmMitra हूँ। फसल, मिट्टी, सिंचाई, उर्वरक, कीट या बाज़ार भाव के बारे में पूछें।",
     open: "FarmMitra से बात करें",
+    listening: "सुन रहा हूँ…",
+    voiceUnsupported: "इस ब्राउज़र में वॉइस इनपुट समर्थित नहीं है।",
   },
   te: {
     title: "FarmMitra ని అడగండి",
@@ -30,8 +35,12 @@ const COPY: Record<string, { title: string; sub: string; ph: string; greet: stri
     ph: "మీ పొలం గురించి ఏదైనా అడగండి…",
     greet: "👋 నమస్కారం! నేను FarmMitra. పంటలు, నేల, నీటిపారుదల, ఎరువులు, పురుగులు లేదా మార్కెట్ ధరల గురించి అడగండి.",
     open: "FarmMitra తో చాట్ చేయండి",
+    listening: "వింటున్నాను…",
+    voiceUnsupported: "ఈ బ్రౌజర్‌లో వాయిస్ ఇన్‌పుట్ మద్దతు లేదు.",
   },
 };
+
+const LANG_MAP: Record<string, string> = { en: "en-IN", hi: "hi-IN", te: "te-IN" };
 
 const ChatBot = () => {
   const { lang } = useLanguage();
@@ -41,7 +50,10 @@ const ChatBot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [listening, setListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const autoSendRef = useRef(false);
 
   // Reset greeting when language changes
   useEffect(() => {
@@ -52,90 +64,29 @@ const ChatBot = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
 
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
+  const sendText = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
     setInput("");
 
-    const userMsg: Msg = { role: "user", content: text };
-    const history = [...messages, userMsg];
-    setMessages(history);
+    const userMsg: Msg = { role: "user", content: trimmed };
+    setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
 
-    // Strip greeting (it's UI-only) before sending
-    const sendable = history.filter((m, i) => !(i === 0 && m.role === "assistant" && m.content === c.greet));
-
-    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/farm-chat`;
-
-    let assistantSoFar = "";
-    const upsert = (chunk: string) => {
-      assistantSoFar += chunk;
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant" && last.content !== c.greet) {
-          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-        }
-        return [...prev, { role: "assistant", content: assistantSoFar }];
-      });
-    };
-
     try {
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ messages: sendable, language: lang }),
+      const { data, error } = await supabase.functions.invoke("lyzr-chat", {
+        body: { message: trimmed },
       });
 
-      if (resp.status === 429) {
-        toast.error("Too many requests. Please wait a moment.");
-        setLoading(false);
-        return;
-      }
-      if (resp.status === 402) {
-        toast.error("AI credits exhausted. Add funds in workspace settings.");
-        setLoading(false);
-        return;
-      }
-      if (!resp.ok || !resp.body) {
+      if (error) {
+        console.error(error);
         toast.error("Chat failed. Please try again.");
         setLoading(false);
         return;
       }
 
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-      let done = false;
-
-      while (!done) {
-        const { done: rd, value } = await reader.read();
-        if (rd) break;
-        buf += decoder.decode(value, { stream: true });
-
-        let nl: number;
-        while ((nl = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, nl);
-          buf = buf.slice(nl + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const json = line.slice(6).trim();
-          if (json === "[DONE]") { done = true; break; }
-
-          try {
-            const parsed = JSON.parse(json);
-            const delta = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (delta) upsert(delta);
-          } catch {
-            buf = line + "\n" + buf;
-            break;
-          }
-        }
-      }
+      const reply = (data as any)?.reply ?? "Sorry, I couldn't get a response.";
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Chat failed");
@@ -144,10 +95,72 @@ const ChatBot = () => {
     }
   };
 
+  const send = () => sendText(input);
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       send();
+    }
+  };
+
+  // Voice-to-text via Web Speech API
+  const toggleVoice = () => {
+    const SpeechRecognition: any =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error(c.voiceUnsupported);
+      return;
+    }
+
+    if (listening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const recog = new SpeechRecognition();
+    recog.lang = LANG_MAP[lang] ?? "en-IN";
+    recog.interimResults = true;
+    recog.continuous = false;
+    autoSendRef.current = false;
+
+    let finalTranscript = "";
+
+    recog.onstart = () => setListening(true);
+    recog.onresult = (event: any) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+          autoSendRef.current = true;
+        } else {
+          interim += transcript;
+        }
+      }
+      setInput((finalTranscript + interim).trim());
+    };
+    recog.onerror = (e: any) => {
+      console.error("Speech error", e);
+      setListening(false);
+      if (e.error && e.error !== "no-speech" && e.error !== "aborted") {
+        toast.error(`Voice error: ${e.error}`);
+      }
+    };
+    recog.onend = () => {
+      setListening(false);
+      const text = finalTranscript.trim();
+      if (autoSendRef.current && text) {
+        sendText(text);
+      }
+    };
+
+    recognitionRef.current = recog;
+    try {
+      recog.start();
+    } catch (e) {
+      console.error(e);
+      setListening(false);
     }
   };
 
@@ -216,8 +229,22 @@ const ChatBot = () => {
             {loading && (
               <div className="flex justify-start">
                 <div className="rounded-2xl rounded-bl-sm bg-secondary px-3 py-2 text-sm text-muted-foreground flex items-center gap-2 shadow-soft">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  …
+                  <span className="flex gap-1">
+                    <span className="h-2 w-2 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: "0ms" }} />
+                    <span className="h-2 w-2 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: "150ms" }} />
+                    <span className="h-2 w-2 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: "300ms" }} />
+                  </span>
+                </div>
+              </div>
+            )}
+            {listening && (
+              <div className="flex justify-end">
+                <div className="rounded-full bg-destructive/10 text-destructive px-3 py-1 text-xs flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
+                  </span>
+                  {c.listening}
                 </div>
               </div>
             )}
@@ -229,10 +256,20 @@ const ChatBot = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder={c.ph}
+              placeholder={listening ? c.listening : c.ph}
               disabled={loading}
               className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
+            <Button
+              size="icon"
+              variant={listening ? "destructive" : "ghost"}
+              onClick={toggleVoice}
+              disabled={loading}
+              aria-label={listening ? "Stop voice input" : "Start voice input"}
+              className={listening ? "animate-pulse" : ""}
+            >
+              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
             <Button
               size="icon"
               onClick={send}
