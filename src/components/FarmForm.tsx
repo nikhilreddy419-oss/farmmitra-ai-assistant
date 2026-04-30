@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PdfDownloadButton from "@/components/PdfDownloadButton";
+import ReadSummaryButton from "@/components/ReadSummaryButton";
 import { getSessionId } from "@/lib/session";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -262,6 +263,7 @@ const FarmForm = ({ onSaved }: Props) => {
                 <span className="text-sm font-semibold uppercase tracking-wider">{tr.form.resultLabel}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <ReadSummaryButton text={result} />
                 <PdfDownloadButton
                   targetId="recommendation-printable"
                   fileBaseName={`FarmMitra-${data.locality || "plan"}`.replace(/[^\w\-]+/g, "_")}
