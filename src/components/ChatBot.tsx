@@ -74,13 +74,35 @@ const ChatBot = () => {
     setLoading(true);
 
     try {
+      // Send last few turns as history for context (exclude the greeting)
+      const history = messages
+        .filter((m, i) => !(i === 0 && m.role === "assistant"))
+        .slice(-8)
+        .map((m) => ({ role: m.role, content: m.content }));
+
       const { data, error } = await supabase.functions.invoke("lyzr-chat", {
-        body: { message: trimmed },
+        body: { message: trimmed, language: lang, history },
       });
 
       if (error) {
         console.error(error);
-        toast.error("Chat failed. Please try again.");
+        const msg = (error as any)?.message || "Chat failed. Please try again.";
+        toast.error(msg);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: `⚠️ ${msg}` },
+        ]);
+        setLoading(false);
+        return;
+      }
+
+      const errMsg = (data as any)?.error;
+      if (errMsg) {
+        toast.error(errMsg);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: `⚠️ ${errMsg}` },
+        ]);
         setLoading(false);
         return;
       }
@@ -89,7 +111,9 @@ const ChatBot = () => {
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Chat failed");
+      const msg = e?.message || "Chat failed";
+      toast.error(msg);
+      setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${msg}` }]);
     } finally {
       setLoading(false);
     }
