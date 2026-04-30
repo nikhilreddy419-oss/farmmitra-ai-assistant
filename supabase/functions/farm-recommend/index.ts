@@ -10,9 +10,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const LYZR_API_KEY = Deno.env.get("LYZR_API_KEY");
-    if (!LYZR_API_KEY) {
-      throw new Error("LYZR_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     const body = await req.json();
@@ -141,42 +141,54 @@ A markdown table: Item | Estimated Cost (₹) | Notes. End with a **bold** estim
 
 Tone: warm, confident, practical. Use emojis only in headings. Use **bold** for key numbers. Do NOT wrap the whole reply in a code block. Remember: every word must be authentic ${responseLanguage} — no English transliterations.`;
 
-    const sessionId = `69e59daebf7ea7a61d8e5245-${crypto.randomUUID()}`;
-
-    const lyzrRes = await fetch(
-      "https://agent-prod.studio.lyzr.ai/v3/inference/chat/",
+    const aiRes = await fetch(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": LYZR_API_KEY,
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
         },
         body: JSON.stringify({
-          user_id: userId || "25r21a6665@mlrit.ac.in",
-          agent_id: "69e59daebf7ea7a61d8e5245",
-          session_id: sessionId,
-          message,
+          model: "openai/gpt-5",
+          messages: [
+            {
+              role: "system",
+              content: `You are FarmMitra.Ai — an expert agricultural advisor for Indian farmers. Always reply in ${responseLanguage} only, in well-structured GitHub-flavored Markdown.`,
+            },
+            { role: "user", content: message },
+          ],
         }),
       },
     );
 
-    const text = await lyzrRes.text();
-    if (!lyzrRes.ok) {
-      console.error("Lyzr error:", lyzrRes.status, text);
+    const text = await aiRes.text();
+    if (!aiRes.ok) {
+      console.error("AI gateway error:", aiRes.status, text);
+      if (aiRes.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit reached. Please try again in a moment." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (aiRes.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted. Please add credits in workspace settings." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       return new Response(
-        JSON.stringify({ error: `Lyzr API error [${lyzrRes.status}]: ${text}` }),
+        JSON.stringify({ error: `AI gateway error [${aiRes.status}]` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     let parsed: any = {};
-    try { parsed = JSON.parse(text); } catch { parsed = { response: text }; }
+    try { parsed = JSON.parse(text); } catch { parsed = {}; }
 
-    const recommendation =
-      parsed.response ??
-      parsed.message ??
-      parsed.output ??
-      (typeof parsed === "string" ? parsed : JSON.stringify(parsed));
+    const recommendation: string =
+      parsed?.choices?.[0]?.message?.content ??
+      "No recommendation returned.";
 
     return new Response(
       JSON.stringify({ recommendation }),
