@@ -10,9 +10,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const LYZR_API_KEY = Deno.env.get("LYZR_API_KEY");
-    if (!LYZR_API_KEY) {
-      throw new Error("LYZR_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     const body = await req.json();
