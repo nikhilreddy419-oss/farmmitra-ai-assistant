@@ -15,6 +15,15 @@ const Ctx = createContext<AuthCtx | undefined>(undefined);
 const claimAnonymousRows = async (userId: string) => {
   try {
     const sessionId = getSessionId();
+    // Register this browser session on the user's profile so RLS allows the claim.
+    const { error: profileErr } = await supabase
+      .from("profiles")
+      .update({ chat_session_id: sessionId })
+      .eq("user_id", userId);
+    if (profileErr) {
+      console.warn("register session on profile failed:", profileErr);
+      return;
+    }
     const { error } = await supabase
       .from("recommendations")
       .update({ user_id: userId })
