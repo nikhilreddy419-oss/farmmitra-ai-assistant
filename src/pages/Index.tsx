@@ -57,6 +57,7 @@ const Index = () => {
         </div>
       </header>
 
+      <main>
       {/* Hero */}
       <section className="relative isolate overflow-hidden min-h-[92vh] flex items-center">
         <img
