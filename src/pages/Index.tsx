@@ -179,6 +179,8 @@ const Index = () => {
         <RecommendationHistory refreshKey={historyKey} />
       </section>
 
+      </main>
+
       {/* Footer */}
       <footer className="border-t border-border bg-secondary/30">
         <div className="container py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
