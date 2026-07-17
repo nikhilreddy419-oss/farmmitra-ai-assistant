@@ -57,6 +57,7 @@ const Index = () => {
         </div>
       </header>
 
+      <main>
       {/* Hero */}
       <section className="relative isolate overflow-hidden min-h-[92vh] flex items-center">
         <img
@@ -177,6 +178,8 @@ const Index = () => {
       <section id="history" className="container pb-24">
         <RecommendationHistory refreshKey={historyKey} />
       </section>
+
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border bg-secondary/30">
