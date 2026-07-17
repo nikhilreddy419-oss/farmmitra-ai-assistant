@@ -86,6 +86,7 @@ const Index = () => {
                 <span className="bg-gradient-to-r from-accent via-primary-foreground to-accent bg-clip-text text-transparent">
                   {tr.hero.title2}
                 </span>
+                <span className="sr-only"> — FarmMitra.Ai, Your AI Farming Companion for Crop, Weather & Market Insights</span>
               </h1>
               <p className="mt-6 text-lg md:text-xl text-primary-foreground/90 max-w-2xl leading-relaxed">
                 {tr.hero.desc}
