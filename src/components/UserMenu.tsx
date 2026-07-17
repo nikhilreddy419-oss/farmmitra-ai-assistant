@@ -33,7 +33,7 @@ const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full ring-1 ring-primary-foreground/30 bg-primary-foreground/10 hover:bg-primary-foreground/20">
+        <Button variant="ghost" size="icon" aria-label="Open account menu" className="rounded-full ring-1 ring-primary-foreground/30 bg-primary-foreground/10 hover:bg-primary-foreground/20">
           <Avatar className="h-8 w-8">
             {avatarUrl && <AvatarImage src={avatarUrl} alt={user.email ?? ""} />}
             <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
