@@ -19,6 +19,7 @@ const LanguageSwitcher = ({ variant = "ghost" }: { variant?: "ghost" | "outline"
         <Button
           variant={variant}
           size="sm"
+          aria-label="Change language"
           className="gap-2 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground border border-primary-foreground/20 backdrop-blur-md"
         >
           <Languages className="h-4 w-4" />
