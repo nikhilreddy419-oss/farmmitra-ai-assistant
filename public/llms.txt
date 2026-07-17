@@ -1,0 +1,13 @@
+# FarmMitra.Ai
+
+> AI-powered crop recommendation and farm advisory platform for Indian farmers, with multilingual support (English, Hindi, Telugu), live weather and market insights.
+
+FarmMitra.Ai helps farmers choose the right crops based on their locality, land area, soil type, water availability, budget, rainfall, and season. It provides AI-generated recommendations, a live weather and market dashboard, and a farming chatbot — all available in English, Hindi, and Telugu.
+
+## Pages
+
+- [Home](/): Enter farm details and get AI-powered crop recommendations, view live weather and market demand insights, and chat with the farming assistant.
+
+## Optional
+
+- [Sign in](/auth): Farmer account sign-in and sign-up to sync recommendation history across devices.
