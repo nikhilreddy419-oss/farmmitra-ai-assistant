@@ -64,6 +64,8 @@ const Index = () => {
           alt="Lush green Indian farmland at golden hour"
           width={1920}
           height={1280}
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/85 via-primary/60 to-transparent" />
