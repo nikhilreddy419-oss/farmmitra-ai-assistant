@@ -1,17 +1,21 @@
 const KEY = "fm-session-id";
+const MIN_LEN = 32;
 
 const generate = () => {
-  // 24-char base36 random id (>= 16 chars required by RLS)
-  const a = crypto.getRandomValues(new Uint32Array(4));
-  return Array.from(a).map((n) => n.toString(36)).join("").slice(0, 24).padEnd(16, "x");
+  // 43-char cryptographically random id (>= 32 chars required by RLS, ~256 bits entropy)
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 };
 
 export const getSessionId = (): string => {
-  if (typeof window === "undefined") return "server-session-id-xxxxx";
+  if (typeof window === "undefined") return "";
   let id = localStorage.getItem(KEY);
-  if (!id || id.length < 16) {
+  if (!id || id.length < MIN_LEN) {
     id = generate();
     localStorage.setItem(KEY, id);
   }
   return id;
 };
+
