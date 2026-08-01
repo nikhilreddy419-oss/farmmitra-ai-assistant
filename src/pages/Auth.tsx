@@ -90,6 +90,24 @@ const Auth = () => {
   const handleGoogle = async () => {
     setLoading(true);
     try {
+      const host = window.location.hostname;
+      const isLovableHost =
+        host.endsWith(".lovable.app") || host.endsWith(".lovable.dev") || host === "localhost";
+
+      if (!isLovableHost) {
+        // Lovable's OAuth broker (/~oauth/*) only exists on Lovable-hosted domains.
+        // On other hosts (e.g. Vercel) go directly through the backend auth provider.
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.origin },
+        });
+        if (error) {
+          toast.error(error.message || "Google sign-in failed");
+          setLoading(false);
+        }
+        return;
+      }
+
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
@@ -104,6 +122,7 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
